@@ -62,4 +62,10 @@ Brand name, contact email, phone, Instagram and shipping rules are in `frontend/
 - CVV: Any 3 digits
 
 ## Production Deployment
+To update the live site, open cPanel Terminal and run:
+```bash
+cd ~/takersclub-api && git pull origin main && bash deploy.sh
+```
+`deploy.sh` installs packages (after the first run it only installs what changed), builds the storefront into `public_html` and restarts the API.
+
 Hosted on Namecheap (cPanel): a static frontend build, a Node/Passenger backend app and MySQL. See [NAMECHEAP_DEPLOY.md](NAMECHEAP_DEPLOY.md). Before deploying, update the cPanel username and paths in `.cpanel.yml` and the domain in `frontend/.env.production`.
