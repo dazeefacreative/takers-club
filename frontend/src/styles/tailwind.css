@@ -1,0 +1,16 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import './theme.css';
+@import 'tw-animate-css';
+
+@layer utilities {
+  /* Deters casual right-click/drag/long-press saving of product photos.
+     Not a hard security boundary -- the files are still reachable by URL --
+     just removes the obvious one-click "Save image" affordance. */
+  .protected-img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}

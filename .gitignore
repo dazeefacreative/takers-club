@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+backend/uploads/*
+!backend/uploads/.gitkeep
+# demo product photos used by backend/seed-demo-products.sql
+!backend/uploads/seed-*.webp
+*.log
+.DS_Store
