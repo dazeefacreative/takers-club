@@ -16,7 +16,9 @@ process.on("unhandledRejection", (reason) => {
 // ─── CORS ────────────────────────────────────────────────────
 const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
   .split(",")
-  .map((url) => url.trim());
+  // tolerate stray spaces and trailing slashes ("https://site.com/") in the env value
+  .map((url) => url.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
