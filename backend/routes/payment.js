@@ -2,7 +2,6 @@ const express = require("express");
 const crypto  = require("crypto");
 const axios   = require("axios");
 const db      = require("../config/db");
-const { optionalAuth } = require("../middleware/auth");
 const { sendCustomerReceipt, sendAdminOrderAlert } = require("../utils/orderEmails");
 
 const router = express.Router();
@@ -19,7 +18,7 @@ const makeOrderNumber = () => {
 
 // ─── POST /api/payment/initialize ────────────────────────────
 // Creates an order record and returns a Paystack authorization URL
-router.post("/initialize", optionalAuth, async (req, res) => {
+router.post("/initialize", async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();
@@ -30,8 +29,10 @@ router.post("/initialize", optionalAuth, async (req, res) => {
       items,   // [{ product_id, size, quantity }]
     } = req.body;
 
-    // Logged-in users always use their account email; guests must supply one
-    const email = req.user?.email || req.body.email;
+    // Guest-only store: always use the email typed at checkout. (Never fall
+    // back to a signed-in account — an admin testing checkout would otherwise
+    // get every order confirmation sent to the admin address.)
+    const email = (req.body.email || "").trim();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!email || !emailPattern.test(email)) {
@@ -83,7 +84,7 @@ router.post("/initialize", optionalAuth, async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
       [
         order_number,
-        req.user?.id || null,
+        null, // no customer accounts
         email, first_name, last_name, phone,
         address_line1, address_line2 || null, city, state, country || "Nigeria", postal_code || null,
         subtotal, shipping_fee, total,
