@@ -1,4 +1,5 @@
-node_modules/
+# no trailing slash: cPanel's Node.js app makes backend/node_modules a symlink
+node_modules
 dist/
 .env
 .env.local
@@ -8,3 +9,8 @@ backend/uploads/*
 !backend/uploads/seed-*.webp
 *.log
 .DS_Store
+
+# created on the server by cPanel/Passenger — must stay untracked so
+# "Deploy HEAD Commit" sees a clean working tree
+backend/tmp/
+stderr.log
