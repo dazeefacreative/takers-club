@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/app/context/AuthContext";
 import { MotionLink, MotionButton, fadeHoverVariants, arrowShiftVariants, tapScale } from "@/app/components/motion/primitives";
 import { useDocumentTitle } from "@/lib/useDocumentTitle";
+import api from "@/lib/api";
 import { BRAND } from "@/lib/brand";
 import logoSrc from "@/imports/takers-logo.png";
 import sideImage from "@/imports/lifestyle-cap.webp";
@@ -24,6 +25,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
   const [loading, setLoading]   = useState(false);
+  const [needsSetup, setNeedsSetup] = useState(false);
+
+  useEffect(() => {
+    api.get("/auth/setup-status").then(({ data }) => setNeedsSetup(!!data.needsSetup)).catch(() => {});
+  }, []);
 
   if (user && isAdmin) return <Navigate to="/admin" replace />;
 
@@ -78,6 +84,13 @@ export default function LoginPage() {
               {loading ? "Signing in…" : <>Sign in <motion.span variants={arrowShiftVariants} className="flex"><ArrowRight size={14} /></motion.span></>}
             </MotionButton>
           </form>
+
+          {needsSetup && (
+            <p className="text-xs text-muted-foreground mt-8">
+              No admin account yet?{" "}
+              <MotionLink to="/admin/setup" className="text-foreground underline underline-offset-2">Set up the first admin</MotionLink>
+            </p>
+          )}
         </div>
       </div>
     </div>

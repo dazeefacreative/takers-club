@@ -18,6 +18,7 @@ interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
+  startSession: (token: string, user: User) => void;
   logout: () => void;
 }
 
@@ -38,12 +39,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  const startSession = (newToken: string, newUser: User) => {
+    localStorage.setItem("tc_token", newToken);
+    localStorage.setItem("tc_user", JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
+  };
+
   const login = async (email: string, password: string) => {
     const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("tc_token", data.token);
-    localStorage.setItem("tc_user", JSON.stringify(data.user));
-    setToken(data.token);
-    setUser(data.user);
+    startSession(data.token, data.user);
     return data.user as User;
   };
 
@@ -55,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAdmin: user?.role === "admin", loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAdmin: user?.role === "admin", loading, login, startSession, logout }}>
       {children}
     </AuthContext.Provider>
   );

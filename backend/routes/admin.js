@@ -149,4 +149,72 @@ router.get("/customers", async (req, res) => {
   res.json(rows);
 });
 
+// ─── ADMINS (store staff who can sign in) ─────────────────────
+const bcrypt = require("bcryptjs");
+const MIN_PASSWORD = 10;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// GET /api/admin/admins
+router.get("/admins", async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT id, first_name, last_name, email, created_at FROM users WHERE role = 'admin' ORDER BY created_at"
+  );
+  res.json(rows);
+});
+
+// POST /api/admin/admins  { first_name, last_name, email, password }
+router.post("/admins", async (req, res) => {
+  try {
+    const { first_name, last_name, email, password } = req.body;
+    if (!first_name || !last_name || !email || !password) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+    if (!emailPattern.test(email)) return res.status(400).json({ error: "Enter a valid email address." });
+    if (password.length < MIN_PASSWORD) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD} characters.` });
+    }
+    const cleanEmail = email.trim().toLowerCase();
+    const [[existing]] = await db.query("SELECT role FROM users WHERE email = ?", [cleanEmail]);
+    if (existing?.role === "admin") return res.status(409).json({ error: "That email is already an admin." });
+
+    const hash = await bcrypt.hash(password, 12);
+    await db.query(
+      `INSERT INTO users (first_name, last_name, email, password_hash, role)
+       VALUES (?, ?, ?, ?, 'admin')
+       ON DUPLICATE KEY UPDATE first_name = VALUES(first_name), last_name = VALUES(last_name),
+                               password_hash = VALUES(password_hash), role = 'admin'`,
+      [first_name.trim(), last_name.trim(), cleanEmail, hash]
+    );
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Could not add admin" });
+  }
+});
+
+// PUT /api/admin/admins/:id/password  { password }
+router.put("/admins/:id/password", async (req, res) => {
+  const { password } = req.body;
+  if (!password || password.length < MIN_PASSWORD) {
+    return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD} characters.` });
+  }
+  const hash = await bcrypt.hash(password, 12);
+  const [result] = await db.query(
+    "UPDATE users SET password_hash = ? WHERE id = ? AND role = 'admin'", [hash, req.params.id]
+  );
+  if (!result.affectedRows) return res.status(404).json({ error: "Admin not found" });
+  res.json({ ok: true });
+});
+
+// DELETE /api/admin/admins/:id — can't remove yourself or the last admin
+router.delete("/admins/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (id === req.user.id) return res.status(400).json({ error: "You can't remove your own account." });
+  const [[{ count }]] = await db.query("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'");
+  if (count <= 1) return res.status(400).json({ error: "The store needs at least one admin." });
+  const [result] = await db.query("DELETE FROM users WHERE id = ? AND role = 'admin'", [id]);
+  if (!result.affectedRows) return res.status(404).json({ error: "Admin not found" });
+  res.json({ ok: true });
+});
+
 module.exports = router;

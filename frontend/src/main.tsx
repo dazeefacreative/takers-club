@@ -28,6 +28,8 @@ import ProductFormPage from "@/app/pages/admin/ProductFormPage";
 import AdminOrders     from "@/app/pages/admin/OrdersPage";
 import AdminCustomers  from "@/app/pages/admin/CustomersPage";
 import SiteSettingsPage from "@/app/pages/admin/SiteSettingsPage";
+import AdminsPage      from "@/app/pages/admin/AdminsPage";
+import AdminSetupPage  from "@/app/pages/admin/AdminSetupPage";
 
 import "@/styles/tailwind.css";
 import "@/styles/fonts.css";
@@ -74,6 +76,7 @@ function AppRoutes() {
       <Route path="/account/*"       element={<Navigate to="/" replace />} />
 
       <Route path="/admin/login"     element={<AdminLoginPage />} />
+      <Route path="/admin/setup"     element={<AdminSetupPage />} />
 
       <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
         <Route index                    element={<DashboardPage />} />
@@ -83,6 +86,7 @@ function AppRoutes() {
         <Route path="orders"            element={<AdminOrders />} />
         <Route path="customers"         element={<AdminCustomers />} />
         <Route path="settings"          element={<SiteSettingsPage />} />
+        <Route path="admins"            element={<AdminsPage />} />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

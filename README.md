@@ -28,11 +28,10 @@ npm run dev           # runs on http://localhost:5180
 Vite proxies `/api` and `/uploads` to http://localhost:3001. Keep `VITE_API_URL` unset in `frontend/.env.local` so local dev uses the local backend.
 
 ### 4. Create the store owner's admin login
-There is no public sign-up. Create the admin account from the backend folder:
-```bash
-node scripts/create-admin.js owner@takersclub.store "a-strong-password" "First" "Last"
-```
-Run it again with the same email to reset the password.
+There is no public sign-up for shoppers or staff.
+- **First admin:** set `ADMIN_SETUP_TOKEN` (any secret code) in the backend env, restart, open `/admin/setup` and enter that code. The page locks itself as soon as an admin exists.
+- **More admins:** a signed-in admin adds them in **Admin → Admins**, where they can also reset passwords and remove admins.
+- **Terminal fallback:** `node scripts/create-admin.js owner@takersclub.store "a-strong-password" "First" "Last"` (also resets a password).
 
 ## Store identity
 Brand name, contact email, phone, Instagram and shipping rules are in `frontend/src/lib/brand.ts`. The phone number and Instagram link stay hidden until they're filled in. If you change the shipping fee or the free-shipping threshold, change them in `backend/routes/payment.js` too.
@@ -50,6 +49,8 @@ Brand name, contact email, phone, Instagram and shipping rules are in `frontend/
 | /about, /contact | Brand pages |
 | /shipping, /returns, /privacy-policy, /terms-of-service | Policies |
 | /admin/login | Store owner sign in |
+| /admin/setup | One-time first-admin setup (needs ADMIN_SETUP_TOKEN) |
+| /admin/admins | Add, reset or remove admins |
 | /admin | Admin dashboard |
 | /admin/products | Manage products (caps sell by colour, everything else by size) |
 | /admin/orders | Manage orders |
