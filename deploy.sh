@@ -37,7 +37,15 @@ echo "==> Publishing to $PUBLIC_DIR"
 cp -r dist/. "$PUBLIC_DIR/"
 
 echo "==> Restarting API"
-mkdir -p "$APP_DIR/backend/tmp"
-touch "$APP_DIR/backend/tmp/restart.txt"
+# Same restart cPanel's "Setup Node.js App → Restart" button performs. The
+# Passenger tmp/restart.txt signal alone isn't honoured on this host.
+if command -v cloudlinux-selector >/dev/null 2>&1 && \
+   cloudlinux-selector restart --json --interpreter nodejs --app-root takersclub-api/backend >/dev/null; then
+  echo "    restarted via cloudlinux-selector"
+else
+  mkdir -p "$APP_DIR/backend/tmp"
+  touch "$APP_DIR/backend/tmp/restart.txt"
+  echo "    !! Automatic restart unavailable — click Restart in cPanel → Setup Node.js App"
+fi
 
 echo "==> Done. Live at https://takersclub.store"
