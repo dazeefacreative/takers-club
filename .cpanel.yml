@@ -1,12 +1,12 @@
-# TODO before first deploy: replace CPANEL_USER with the client's cPanel username,
+# cPanel account: takebloz — repo cloned to /home/takebloz/takersclub-api
 # (API subdomain: api.takersclub.store)
 ---
 deployment:
   tasks:
     # Backend: use the CloudLinux NodeJS Selector wrapper as intended — it
     # symlinks this app's node_modules into its registered venv correctly.
-    - export NODEBIN=$(ls -d /home/CPANEL_USER/nodevenv/takersclub-api/backend/*/bin | head -n 1)
-    - cd /home/CPANEL_USER/takersclub-api/backend && $NODEBIN/npm install --production
+    - export NODEBIN=$(ls -d /home/takebloz/nodevenv/takersclub-api/backend/*/bin | head -n 1)
+    - cd /home/takebloz/takersclub-api/backend && $NODEBIN/npm install --production
 
     # Frontend: there's no registered Node.js App for it, so the wrapper's
     # npm would (wrongly) resolve the *backend's* package.json/node_modules
@@ -14,12 +14,12 @@ deployment:
     # directly, bypassing the wrapper, so it operates on the frontend's own
     # package.json in the current directory like a normal npm install.
     - export REALNPM=/opt/alt/alt-nodejs20/root/usr/bin/npm
-    - rm -rf /home/CPANEL_USER/takersclub-api/frontend/node_modules
-    - cd /home/CPANEL_USER/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM install
-    - cd /home/CPANEL_USER/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM run build
+    - rm -rf /home/takebloz/takersclub-api/frontend/node_modules
+    - cd /home/takebloz/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM install
+    - cd /home/takebloz/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM run build
     # trailing "/." (not "/*") so dotfiles like .htaccess get copied too —
     # bash globs don't match dotfiles by default.
-    - /bin/cp -r /home/CPANEL_USER/takersclub-api/frontend/dist/. /home/CPANEL_USER/public_html/
+    - /bin/cp -r /home/takebloz/takersclub-api/frontend/dist/. /home/takebloz/public_html/
 
-    - /bin/mkdir -p /home/CPANEL_USER/takersclub-api/backend/tmp
-    - /bin/touch /home/CPANEL_USER/takersclub-api/backend/tmp/restart.txt
+    - /bin/mkdir -p /home/takebloz/takersclub-api/backend/tmp
+    - /bin/touch /home/takebloz/takersclub-api/backend/tmp/restart.txt
