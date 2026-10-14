@@ -37,15 +37,25 @@ echo "==> Publishing to $PUBLIC_DIR"
 cp -r dist/. "$PUBLIC_DIR/"
 
 echo "==> Restarting API"
-# Same restart cPanel's "Setup Node.js App → Restart" button performs. The
-# Passenger tmp/restart.txt signal alone isn't honoured on this host.
-if command -v cloudlinux-selector >/dev/null 2>&1 && \
-   cloudlinux-selector restart --json --interpreter nodejs --app-root takersclub-api/backend >/dev/null; then
-  echo "    restarted via cloudlinux-selector"
+# This host runs Node through LiteSpeed ("lsnode" processes). Neither cPanel's
+# Restart button nor tmp/restart.txt reliably replaces a running lsnode, so
+# stop it outright — LiteSpeed starts a fresh one (with the new code) on the
+# next request.
+cloudlinux-selector restart --json --interpreter nodejs --app-root takersclub-api/backend >/dev/null 2>&1 || true
+mkdir -p "$APP_DIR/backend/tmp"
+touch "$APP_DIR/backend/tmp/restart.txt"
+if pkill -u "$(id -u)" -f "lsnode:$APP_DIR/backend/"; then
+  echo "    stopped the old API process; a fresh one starts on the next request"
 else
-  mkdir -p "$APP_DIR/backend/tmp"
-  touch "$APP_DIR/backend/tmp/restart.txt"
-  echo "    !! Automatic restart unavailable — click Restart in cPanel → Setup Node.js App"
+  echo "    no running API process found (it will start on the next request)"
+fi
+
+echo "==> Checking the API"
+sleep 3
+if curl -fsS https://api.takersclub.store/api/health >/dev/null; then
+  echo "    API is up"
+else
+  echo "    !! API health check failed — see backend/stderr.log"
 fi
 
 echo "==> Done. Live at https://takersclub.store"
