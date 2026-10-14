@@ -14,8 +14,10 @@ deployment:
     # directly, bypassing the wrapper, so it operates on the frontend's own
     # package.json in the current directory like a normal npm install.
     - export REALNPM=/opt/alt/alt-nodejs20/root/usr/bin/npm
-    - rm -rf /home/takebloz/takersclub-api/frontend/node_modules
-    - cd /home/takebloz/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM install
+    # node_modules is kept between deploys (it's gitignored), so after the
+    # first deploy npm only installs what changed — keeps updates to a few
+    # minutes instead of a full reinstall every time.
+    - cd /home/takebloz/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM install --no-audit --no-fund
     - cd /home/takebloz/takersclub-api/frontend && VITE_API_URL=https://api.takersclub.store/api $REALNPM run build
     # trailing "/." (not "/*") so dotfiles like .htaccess get copied too —
     # bash globs don't match dotfiles by default.
