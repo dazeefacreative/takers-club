@@ -1,6 +1,6 @@
+---
 # cPanel account: takebloz — repo cloned to /home/takebloz/takersclub-api
 # (API subdomain: api.takersclub.store)
----
 deployment:
   tasks:
     # Backend: use the CloudLinux NodeJS Selector wrapper as intended — it
